@@ -1,0 +1,140 @@
+# Daiki Yamamuro
+# 2023/11/03
+# 山手線、中央線、総武線の最短経路アルゴリズム
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import streamlit as st
+
+G = nx.MultiGraph()
+
+# 山手線の駅をノードとして追加
+stations = [
+    '東京', '神田', '秋葉原', '御徒町', '上野', '鶯谷', '日暮里',
+    '西日暮里', '田端', '駒込', '巣鴨', '大塚', '池袋',
+    '目白', '高田馬場', '新大久保', '新宿', '代々木', '原宿',
+    '渋谷', '恵比寿', '目黒', '五反田', '大崎', '品川', '田町',
+    '浜松町', '新橋', '有楽町'
+]
+
+# 中央線の駅をノードとして追加
+chuo_stations = ['新宿', '四ツ谷', '御茶ノ水', '神田', '東京']
+stations.extend([station for station in chuo_stations if station not in stations])
+
+# 総武線の駅をノードとして追加
+sobu_stations = ['新宿', '代々木', '千駄ヶ谷', '信濃町', '四ツ谷', '市ヶ谷', '飯田橋', '水道橋', '御茶ノ水', '秋葉原']
+stations.extend([station for station in sobu_stations if station not in stations])
+
+G.add_nodes_from(stations)
+
+# 駅間のエッジを追加
+G.add_edge('東京', '神田', weight=1.0, line='山手線')
+G.add_edge('神田', '秋葉原', weight=2.0, line='山手線')
+G.add_edge('秋葉原', '御徒町', weight=2.0, line='山手線')
+G.add_edge('御徒町', '上野', weight=2.0, line='山手線')
+G.add_edge('上野', '鶯谷', weight=2.0, line='山手線')
+G.add_edge('鶯谷', '日暮里', weight=2.0, line='山手線')
+G.add_edge('日暮里', '西日暮里', weight=1.0, line='山手線')
+G.add_edge('西日暮里', '田端', weight=2.0, line='山手線')
+G.add_edge('田端', '駒込', weight=2.0, line='山手線')
+G.add_edge('駒込', '巣鴨', weight=2.0, line='山手線')
+G.add_edge('巣鴨', '大塚', weight=2.0, line='山手線')
+G.add_edge('大塚', '池袋', weight=2.0, line='山手線')
+G.add_edge('池袋', '目白', weight=3.0, line='山手線')
+G.add_edge('目白', '高田馬場', weight=2.0, line='山手線')
+G.add_edge('高田馬場', '新大久保', weight=2.0, line='山手線')
+G.add_edge('新大久保', '新宿', weight=2.0, line='山手線')
+G.add_edge('新宿', '代々木', weight=2.0, line='山手線')
+G.add_edge('代々木', '原宿', weight=2.0, line='山手線')
+G.add_edge('原宿', '渋谷', weight=2.0, line='山手線')
+G.add_edge('渋谷', '恵比寿', weight=2.0, line='山手線')
+G.add_edge('恵比寿', '目黒', weight=3.0, line='山手線')
+G.add_edge('目黒', '五反田', weight=2.0, line='山手線')
+G.add_edge('五反田', '大崎', weight=2.0, line='山手線')
+G.add_edge('大崎', '品川', weight=3.0, line='山手線')
+G.add_edge('品川', '田町', weight=2.0, line='山手線')
+G.add_edge('田町', '浜松町', weight=2.0, line='山手線')
+G.add_edge('浜松町', '新橋', weight=2.0, line='山手線')
+G.add_edge('新橋', '有楽町', weight=2.0, line='山手線')
+G.add_edge('有楽町', '東京', weight=2.0, line='山手線')
+
+# 中央線の駅間のエッジを追加
+G.add_edge('四ツ谷', '新宿', weight=5.0, line='中央線')
+G.add_edge('御茶ノ水', '四ツ谷', weight=5.0, line='中央線')
+G.add_edge('神田', '御茶ノ水', weight=2.0, line='中央線')
+G.add_edge('東京', '神田', weight=1.0, line='中央線')
+
+# 総武線の駅間のエッジを追加
+G.add_edge('新宿', '代々木', weight=2.0, line='総武線')
+G.add_edge('代々木', '千駄ヶ谷', weight=2.0, line='総武線')
+G.add_edge('千駄ヶ谷', '信濃町', weight=2.0, line='総武線')
+G.add_edge('信濃町', '四ツ谷', weight=2.0, line='総武線')
+G.add_edge('四ツ谷', '市ヶ谷', weight=2.0, line='総武線')
+G.add_edge('市ヶ谷', '飯田橋', weight=2.0, line='総武線')
+G.add_edge('飯田橋', '水道橋', weight=2.0, line='総武線')
+G.add_edge('水道橋', '御茶ノ水', weight=2.0, line='総武線')
+G.add_edge('御茶ノ水', '秋葉原', weight=2.0, line='総武線')
+
+# # グラフの描画
+# pos = nx.spring_layout(G)
+# nx.draw(G, pos, with_labels=True, node_size=500, node_color='lightblue')
+# plt.show()
+
+st.title('最短経路検索')
+st.write('最短経路とその合計時間を表示します。')
+
+# ユーザー入力の取得
+start_station = st.selectbox('出発駅を選択してください。', stations)
+end_station = st.selectbox('到着駅を選択してください。', stations)
+
+# 最短経路の計算と結果の表示
+def calculate_shortest_path(G, start_station, end_station):
+    try:
+        # shortest_path関数はMultiGraphにも対応しています。
+        path = nx.shortest_path(G, source=start_station, target=end_station, weight='weight')
+        total_time = 0
+        path_lines = []  # 経路の路線を格納するリスト
+        
+        for u, v in zip(path[:-1], path[1:]):
+            # MultiGraphでは同じノード間に複数のエッジが存在するため、
+            # 最小のweightを持つエッジを選択します。ただし、
+            # 以前と同じlineであれば変更しないようにします。
+            min_edge = min(G[u][v].values(), key=lambda x: (x['weight'], path_lines[-1] != x['line'] if path_lines else False))
+            total_time += min_edge['weight']
+            path_lines.append(min_edge['line'])  # 路線名を追加
+        
+        # 路線ごとに経路をまとめる
+        compact_lines = []
+        start = path[0]
+        current_line = path_lines[0]
+
+        for i, station in enumerate(path[:-1]):
+            if path_lines[i] != current_line:
+                compact_lines.append((start, station, current_line))
+                start = station  # この行を修正
+                current_line = path_lines[i]
+        compact_lines.append((start, path[-1], current_line))  # 最後の区間を追加
+
+
+        return path, total_time, compact_lines
+    except nx.NetworkXNoPath:
+        return None, "経路が存在しません。", None
+    except nx.NodeNotFound:
+        return None, "駅が見つかりません。", None
+
+
+# ボタンが押されたら最短経路を計算
+if st.button('最短経路を検索'):
+    path, total_time, compact_lines = calculate_shortest_path(G, start_station, end_station)
+    if path:
+        st.write(f"最短経路: {' -> '.join(path)}")
+        # 路線ごとの経路を表示
+        for start, end, line in compact_lines:
+            st.write(f"{start} から {end} まで: {line}")
+        st.write(f"合計時間: {total_time} 分")
+    else:
+        st.error(total_time)
+
+
+
+
