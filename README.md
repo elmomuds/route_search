@@ -6,3 +6,11 @@
 - 総武線
 
 ##### app.pyを起動することで動かすことができます。
+
+### pip3で入れたもの
+- streamlit
+- networkx
+
+### バージョン
+Streamlit, version 1.28.1
+Python 3.11.6
