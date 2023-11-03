@@ -17,7 +17,7 @@ stations = [
     '浜松町', '新橋', '有楽町'
 ]
 
-# 中央線の駅をノードとして追加
+# 中央線の駅を
 chuo_stations = ['新宿', '四ツ谷', '御茶ノ水', '神田', '東京']
 stations.extend([station for station in chuo_stations if station not in stations])
 
@@ -90,15 +90,13 @@ end_station = st.selectbox('到着駅を選択してください。', stations)
 # 最短経路の計算と結果の表示
 def calculate_shortest_path(G, start_station, end_station):
     try:
-        # shortest_path関数はMultiGraphにも対応しています。
         path = nx.shortest_path(G, source=start_station, target=end_station, weight='weight')
         total_time = 0
         path_lines = []  # 経路の路線を格納するリスト
         
         for u, v in zip(path[:-1], path[1:]):
-            # MultiGraphでは同じノード間に複数のエッジが存在するため、
-            # 最小のweightを持つエッジを選択します。ただし、
-            # 以前と同じlineであれば変更しないようにします。
+            # MultiGraphでは同じノード間に複数のエッジが存在するときに最小のweightを持つエッジを選択
+            # 同じlineであれば変更しないようにする
             min_edge = min(G[u][v].values(), key=lambda x: (x['weight'], path_lines[-1] != x['line'] if path_lines else False))
             total_time += min_edge['weight']
             path_lines.append(min_edge['line'])  # 路線名を追加
