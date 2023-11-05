@@ -103,6 +103,10 @@ end_station = st.selectbox('到着駅を選択してください。', stations)
 
 # 最短経路の計算と結果の表示
 def calculate_shortest_path(G, start_station, end_station):
+    # 始点と終点が同じである場合のチェック
+    if start_station == end_station:
+        return None, "違う駅を選択してください。", None
+
     try:
         path = nx.shortest_path(G, source=start_station, target=end_station, weight='weight')
         total_time = 0
@@ -138,11 +142,14 @@ def calculate_shortest_path(G, start_station, end_station):
 # ボタンが押されたら最短経路を計算
 if st.button('最短経路を検索'):
     path, total_time, compact_lines = calculate_shortest_path(G, start_station, end_station)
-    if path:
+    
+    if total_time == "違う駅を選択してください。":
+        st.error(total_time)  # エラーメッセージを表示
+    elif path:
         st.write(f"最短経路: {' -> '.join(path)}")
         # 路線ごとの経路を表示
         for start, end, line in compact_lines:
             st.write(f"{start} から {end} まで: {line}")
         st.write(f"合計時間: {total_time} 分")
     else:
-        st.error(total_time)
+        st.error(total_time) 
