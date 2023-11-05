@@ -18,11 +18,11 @@ stations = [
 ]
 
 # 中央線の駅を
-chuo_stations = ['新宿', '四ツ谷', '御茶ノ水', '神田', '東京']
+chuo_stations = ['新宿', '四ツ谷', '御茶ノ水', '神田', '東京', '中野', '高円寺', '阿佐ヶ谷', '荻窪', '西荻窪', '吉祥寺', '三鷹']
 stations.extend([station for station in chuo_stations if station not in stations])
 
 # 総武線の駅をノードとして追加
-sobu_stations = ['新宿', '代々木', '千駄ヶ谷', '信濃町', '四ツ谷', '市ヶ谷', '飯田橋', '水道橋', '御茶ノ水', '秋葉原']
+sobu_stations = ['新宿', '大久保', '東中野', '中野', '高円寺', '阿佐ヶ谷', '荻窪', '西荻窪', '吉祥寺', '三鷹', '代々木', '千駄ヶ谷', '信濃町', '四ツ谷', '市ヶ谷', '飯田橋', '水道橋', '御茶ノ水', '秋葉原']
 stations.extend([station for station in sobu_stations if station not in stations])
 
 G.add_nodes_from(stations)
@@ -63,9 +63,17 @@ G.add_edge('四ツ谷', '新宿', weight=5.0, line='中央線')
 G.add_edge('御茶ノ水', '四ツ谷', weight=5.0, line='中央線')
 G.add_edge('神田', '御茶ノ水', weight=2.0, line='中央線')
 G.add_edge('東京', '神田', weight=1.0, line='中央線')
+G.add_edge('新宿', '中野', weight=5.0, line='中央線')
+G.add_edge('中野', '高円寺', weight=2.0, line='中央線')
+G.add_edge('高円寺', '阿佐ヶ谷', weight=2.0, line='中央線')
+G.add_edge('阿佐ヶ谷', '荻窪', weight=2.0, line='中央線')
+G.add_edge('荻窪', '西荻窪', weight=3.0, line='中央線')
+G.add_edge('西荻窪', '吉祥寺', weight=2.0, line='中央線')
+G.add_edge('吉祥寺', '三鷹', weight=3.0, line='中央線')
+
 
 # 総武線の駅間のエッジを追加
-G.add_edge('新宿', '代々木', weight=2.0, line='総武線')
+G.add_edge('新宿', '代々木', weight=1.0, line='総武線')
 G.add_edge('代々木', '千駄ヶ谷', weight=2.0, line='総武線')
 G.add_edge('千駄ヶ谷', '信濃町', weight=2.0, line='総武線')
 G.add_edge('信濃町', '四ツ谷', weight=2.0, line='総武線')
@@ -75,10 +83,16 @@ G.add_edge('飯田橋', '水道橋', weight=2.0, line='総武線')
 G.add_edge('水道橋', '御茶ノ水', weight=2.0, line='総武線')
 G.add_edge('御茶ノ水', '秋葉原', weight=2.0, line='総武線')
 
-# # グラフの描画
-# pos = nx.spring_layout(G)
-# nx.draw(G, pos, with_labels=True, node_size=500, node_color='lightblue')
-# plt.show()
+# 新宿から中野までのエッジを追加（新たに追加したコード）
+G.add_edge('新宿', '大久保', weight=3.0, line='総武線')
+G.add_edge('大久保', '東中野', weight=2.0, line='総武線')
+G.add_edge('東中野', '中野', weight=2.0, line='総武線')
+G.add_edge('中野', '高円寺', weight=2.0, line='総武線')
+G.add_edge('高円寺', '阿佐ヶ谷', weight=2.0, line='総武線')
+G.add_edge('阿佐ヶ谷', '荻窪', weight=2.0, line='総武線')
+G.add_edge('荻窪', '西荻窪', weight=3.0, line='総武線')
+G.add_edge('西荻窪', '吉祥寺', weight=2.0, line='総武線')
+G.add_edge('吉祥寺', '三鷹', weight=3.0, line='総武線')
 
 st.title('最短経路検索')
 st.write('最短経路とその合計時間を表示します。')
@@ -132,7 +146,3 @@ if st.button('最短経路を検索'):
         st.write(f"合計時間: {total_time} 分")
     else:
         st.error(total_time)
-
-
-
-
