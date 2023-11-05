@@ -17,13 +17,16 @@ stations = [
     '浜松町', '新橋', '有楽町'
 ]
 
-# 中央線の駅を
+# 中央線の駅をノードとして追加
 chuo_stations = ['新宿', '四ツ谷', '御茶ノ水', '神田', '東京', '中野', '高円寺', '阿佐ヶ谷', '荻窪', '西荻窪', '吉祥寺', '三鷹']
 stations.extend([station for station in chuo_stations if station not in stations])
 
 # 総武線の駅をノードとして追加
 sobu_stations = ['新宿', '大久保', '東中野', '中野', '高円寺', '阿佐ヶ谷', '荻窪', '西荻窪', '吉祥寺', '三鷹', '代々木', '千駄ヶ谷', '信濃町', '四ツ谷', '市ヶ谷', '飯田橋', '水道橋', '御茶ノ水', '秋葉原']
 stations.extend([station for station in sobu_stations if station not in stations])
+
+# ダッシュで移動できる駅をノードとして追加
+walk = ['大久保', '新大久保', '御茶ノ水', '御徒町']
 
 G.add_nodes_from(stations)
 
@@ -94,6 +97,11 @@ G.add_edge('荻窪', '西荻窪', weight=3.0, line='総武線')
 G.add_edge('西荻窪', '吉祥寺', weight=2.0, line='総武線')
 G.add_edge('吉祥寺', '三鷹', weight=3.0, line='総武線')
 
+# ダッシュで移動できる駅間のエッジを追加
+G.add_edge('新大久保', '大久保', weight=1.0, line='ダッシュ')
+G.add_edge('御茶ノ水', '御徒町', weight=1.0, line='ダッシュ')
+
+
 st.title('最短経路検索')
 st.write('最短経路とその合計時間を表示します。')
 
@@ -101,9 +109,17 @@ st.write('最短経路とその合計時間を表示します。')
 start_station = st.selectbox('出発駅を選択してください。', stations)
 end_station = st.selectbox('到着駅を選択してください。', stations)
 
+# ダッシュの路線を含むかどうかを選択するチェックボックスを追加
+include_dash = st.checkbox('ダッシュを含む')
+
 # 最短経路の計算と結果の表示
-def calculate_shortest_path(G, start_station, end_station):
-    # 始点と終点が同じである場合のチェック
+def calculate_shortest_path(G, start_station, end_station, include_dash):
+    # ダッシュの路線を含まない場合、該当するエッジを削除
+    if not include_dash:
+        G = G.copy()  # グラフをコピーして元のグラフに影響を与えないようにする
+        edges_to_remove = [(u, v, key) for u, v, key, data in G.edges(keys=True, data=True) if data['line'] == 'ダッシュ']
+        G.remove_edges_from(edges_to_remove)
+
     if start_station == end_station:
         return None, "違う駅を選択してください。", None
 
@@ -141,7 +157,7 @@ def calculate_shortest_path(G, start_station, end_station):
 
 # ボタンが押されたら最短経路を計算
 if st.button('最短経路を検索'):
-    path, total_time, compact_lines = calculate_shortest_path(G, start_station, end_station)
+    path, total_time, compact_lines = calculate_shortest_path(G, start_station, end_station, include_dash)
     
     if total_time == "違う駅を選択してください。":
         st.error(total_time)  # エラーメッセージを表示
