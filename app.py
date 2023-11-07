@@ -143,7 +143,7 @@ def calculate_shortest_path(G, start_station, end_station, include_dash):
         for i, station in enumerate(path[:-1]):
             if path_lines[i] != current_line:
                 compact_lines.append((start, station, current_line))
-                start = station  # この行を修正
+                start = station
                 current_line = path_lines[i]
         compact_lines.append((start, path[-1], current_line))  # 最後の区間を追加
 
