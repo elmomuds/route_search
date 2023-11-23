@@ -17,7 +17,7 @@ stations = [
     '浜松町', '新橋', '有楽町'
 ]
 
-# 中央線の駅を
+# 中央線の駅をノードとして追加
 chuo_stations = ['新宿', '四ツ谷', '御茶ノ水', '神田', '東京', '中野', '高円寺', '阿佐ヶ谷', '荻窪', '西荻窪', '吉祥寺', '三鷹']
 stations.extend([station for station in chuo_stations if station not in stations])
 
