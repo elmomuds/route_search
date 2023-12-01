@@ -10,8 +10,8 @@
 `pip3 install networkx matplotlib streamlit`
 4. このリポジトリをクローンする。<br>
 `git clone https://github.com/elmomuds/route_search.git`
-5. route_researchディレクトリに移動する。<br>
-`cd route_research`
+5. route_searchディレクトリに移動する。<br>
+`cd route_search`
 6. アプリを実行する。<br>
 `streamlit run app.py`
 
