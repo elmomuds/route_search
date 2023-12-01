@@ -3,9 +3,9 @@
 ### 実行するまでの手順
 0. MacBookを準備します。(以降ターミナルにコピペして実行する)
 1. Homebrewをインストールする。
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`  
+### `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`  
 2. Python3をインストールする。
-`brew install python3`
+### `brew install python3`
 3. pip3でライブラリをインストールする。
 `pip3 install networkx matplotlib streamlit`
 4. このリポジトリをクローンする。
