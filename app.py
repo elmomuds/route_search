@@ -1,5 +1,5 @@
 # Daiki Yamamuro
-# 2023/11/03
+# 2023/12/01
 # 山手線、中央線、総武線の最短経路アルゴリズム
 
 import networkx as nx
@@ -25,12 +25,15 @@ stations.extend([station for station in chuo_stations if station not in stations
 sobu_stations = ['新宿', '大久保', '東中野', '中野', '高円寺', '阿佐ヶ谷', '荻窪', '西荻窪', '吉祥寺', '三鷹', '代々木', '千駄ヶ谷', '信濃町', '四ツ谷', '市ヶ谷', '飯田橋', '水道橋', '御茶ノ水', '秋葉原']
 stations.extend([station for station in sobu_stations if station not in stations])
 
+# ダッシュで移動できる駅をノードとして追加
+walk = ['大久保', '新大久保', '御茶ノ水', '御徒町']
+
 G.add_nodes_from(stations)
 
 # 駅間のエッジを追加
 G.add_edge('東京', '神田', weight=1.0, line='山手線')
 G.add_edge('神田', '秋葉原', weight=2.0, line='山手線')
-G.add_edge('秋葉原', '御徒町', weight=2.0, line='山手線')
+G.add_edge('秋葉原', '御徒町', weight=3.0, line='山手線')
 G.add_edge('御徒町', '上野', weight=2.0, line='山手線')
 G.add_edge('上野', '鶯谷', weight=2.0, line='山手線')
 G.add_edge('鶯谷', '日暮里', weight=2.0, line='山手線')
@@ -81,7 +84,7 @@ G.add_edge('四ツ谷', '市ヶ谷', weight=2.0, line='総武線')
 G.add_edge('市ヶ谷', '飯田橋', weight=2.0, line='総武線')
 G.add_edge('飯田橋', '水道橋', weight=2.0, line='総武線')
 G.add_edge('水道橋', '御茶ノ水', weight=2.0, line='総武線')
-G.add_edge('御茶ノ水', '秋葉原', weight=2.0, line='総武線')
+G.add_edge('御茶ノ水', '秋葉原', weight=3.0, line='総武線')
 
 # 新宿から中野までのエッジを追加（新たに追加したコード）
 G.add_edge('新宿', '大久保', weight=3.0, line='総武線')
@@ -94,15 +97,32 @@ G.add_edge('荻窪', '西荻窪', weight=3.0, line='総武線')
 G.add_edge('西荻窪', '吉祥寺', weight=2.0, line='総武線')
 G.add_edge('吉祥寺', '三鷹', weight=3.0, line='総武線')
 
-st.title('最短経路検索')
+# ダッシュで移動できる駅間のエッジを追加
+G.add_edge('新大久保', '大久保', weight=1.0, line='ダッシュ')
+G.add_edge('御茶ノ水', '御徒町', weight=5.0, line='ダッシュ')
+
+
+st.title('🚃 最短経路検索 🚃')
 st.write('最短経路とその合計時間を表示します。')
 
 # ユーザー入力の取得
-start_station = st.selectbox('出発駅を選択してください。', stations)
-end_station = st.selectbox('到着駅を選択してください。', stations)
+start_station = st.selectbox('出発駅', stations)
+end_station = st.selectbox('到着駅', stations)
+
+# ダッシュの路線を含むかどうかを選択するチェックボックスを追加
+include_dash = st.checkbox('ダッシュを含む')
 
 # 最短経路の計算と結果の表示
-def calculate_shortest_path(G, start_station, end_station):
+def calculate_shortest_path(G, start_station, end_station, include_dash):
+    # ダッシュの路線を含まない場合、該当するエッジを削除
+    if not include_dash:
+        G = G.copy()  # グラフをコピーして元のグラフに影響を与えないようにする
+        edges_to_remove = [(u, v, key) for u, v, key, data in G.edges(keys=True, data=True) if data['line'] == 'ダッシュ']
+        G.remove_edges_from(edges_to_remove)
+
+    if start_station == end_station:
+        return None, "違う駅を選択してください。", None
+
     try:
         path = nx.shortest_path(G, source=start_station, target=end_station, weight='weight')
         total_time = 0
@@ -123,7 +143,7 @@ def calculate_shortest_path(G, start_station, end_station):
         for i, station in enumerate(path[:-1]):
             if path_lines[i] != current_line:
                 compact_lines.append((start, station, current_line))
-                start = station  # この行を修正
+                start = station
                 current_line = path_lines[i]
         compact_lines.append((start, path[-1], current_line))  # 最後の区間を追加
 
@@ -137,12 +157,15 @@ def calculate_shortest_path(G, start_station, end_station):
 
 # ボタンが押されたら最短経路を計算
 if st.button('最短経路を検索'):
-    path, total_time, compact_lines = calculate_shortest_path(G, start_station, end_station)
-    if path:
+    path, total_time, compact_lines = calculate_shortest_path(G, start_station, end_station, include_dash)
+    
+    if total_time == "違う駅を選択してください。":
+        st.error(total_time)  # エラーメッセージを表示
+    elif path:
         st.write(f"最短経路: {' -> '.join(path)}")
         # 路線ごとの経路を表示
         for start, end, line in compact_lines:
             st.write(f"{start} から {end} まで: {line}")
         st.write(f"合計時間: {total_time} 分")
     else:
-        st.error(total_time)
+        st.error(total_time) 
