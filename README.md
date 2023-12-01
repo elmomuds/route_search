@@ -11,7 +11,7 @@
 4. このリポジトリをクローンする。<br>
 `git clone https://github.com/elmomuds/route_search.git`
 5. route_reserchディレクトリに移動する。<br>
-`cd route_reserch`
+`cd route_research`
 6. アプリを実行する。<br>
 `streamlit run app.py`
 
